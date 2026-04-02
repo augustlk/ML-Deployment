@@ -158,6 +158,13 @@ def score_orders(model_path: str, pg_dsn: str, model_version: str | None = None)
         df_raw = pd.DataFrame(rows, columns=cols)
         print(f"[{datetime.now():%H:%M:%S}] Fetched {len(df_raw):,} orders")
 
+        # PostgreSQL returns NUMERIC columns as decimal.Decimal — cast to float
+        decimal_cols = ['order_subtotal', 'shipping_fee', 'tax_amount', 'order_total',
+                        'risk_score', 'promised_days', 'actual_days']
+        for col in decimal_cols:
+            if col in df_raw.columns:
+                df_raw[col] = pd.to_numeric(df_raw[col], errors='coerce')
+
         df = engineer_features(df_raw)
 
         # Verify all expected feature columns are present
