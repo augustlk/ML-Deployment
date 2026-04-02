@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using ShopApp.Web.Controllers;
 using ShopApp.Web.Services.Interfaces;
+using Xunit;
 
 namespace ShopApp.Tests.Controllers;
 

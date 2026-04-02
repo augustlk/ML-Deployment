@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ShopApp.Web.Data;
 using ShopApp.Web.Models.Entities;
 using ShopApp.Web.Services.Implementations;
+using Xunit;
 
 namespace ShopApp.Tests.Services;
 
