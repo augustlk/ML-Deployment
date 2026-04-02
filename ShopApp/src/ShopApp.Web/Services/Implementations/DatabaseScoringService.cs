@@ -106,7 +106,7 @@ public sealed class DatabaseScoringService : IScoringService
                 ms.model_version,
                 ms.scored_at,
                 o.customer_id,
-                COALESCE(c.first_name || ' ' || c.last_name, 'Unknown') AS customer_name,
+                COALESCE(c.full_name, 'Unknown') AS customer_name,
                 o.order_datetime,
                 o.order_total,
                 s.carrier,
