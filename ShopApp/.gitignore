@@ -1,0 +1,27 @@
+# Environment / secrets
+.env
+*.env.local
+
+# .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Test results
+test-results/
+TestResults/
+coverage/
+*.trx
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# SQLite (kept as local seed reference, but should not be in git for production repos)
+# Uncomment the line below if you don't want to track shop.db
+# src/ShopApp.Web/Data/shop.db

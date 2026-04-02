@@ -1,0 +1,63 @@
+/* ── Global ─────────────────────────────────────────────── */
+body {
+    background-color: #f8f9fa;
+    font-size: 0.95rem;
+}
+
+/* ── Customer cards ─────────────────────────────────────── */
+.customer-card {
+    transition: transform .15s, box-shadow .15s;
+    cursor: pointer;
+}
+.customer-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.12) !important;
+}
+
+.avatar-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #343a40;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* ── Stat cards ──────────────────────────────────────────── */
+.stat-card {
+    border-radius: .75rem;
+}
+.stat-number {
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+.stat-label {
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #6c757d;
+    margin-top: .25rem;
+}
+
+/* ── Warehouse table ─────────────────────────────────────── */
+.table td, .table th {
+    vertical-align: middle;
+}
+
+/* ── Navbar active link ──────────────────────────────────── */
+.nav-link.active {
+    font-weight: 600;
+    color: #fff !important;
+}
+
+/* ── Accordion order history ──────────────────────────────── */
+.accordion-button:not(.collapsed) {
+    background-color: #f0f0f0;
+    color: #212529;
+}

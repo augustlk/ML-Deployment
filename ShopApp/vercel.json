@@ -1,0 +1,24 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+
+  "build": {
+    "env": {
+      "ASPNETCORE_ENVIRONMENT": "Production"
+    }
+  },
+
+  "functions": {},
+
+  "routes": [
+    { "src": "/(.*)", "dest": "/" }
+  ],
+
+  "env": {
+    "ConnectionStrings__ShopDb": "/app/data/shop.db"
+  },
+
+  "buildCommand": "docker build -t shopapp .",
+  "outputDirectory": ".",
+  "installCommand": ""
+}

@@ -1,0 +1,94 @@
+@model CustomerSelectViewModel
+@{
+    ViewData["Title"] = "Select Customer";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="bi bi-people me-2"></i>Select a Customer</h2>
+    <span class="badge bg-secondary fs-6">@Model.Customers.Count() customers</span>
+</div>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-5">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" name="search" value="@Model.SearchQuery"
+                   class="form-control" placeholder="Search by name or email…" />
+        </div>
+    </div>
+    <div class="col-md-3">
+        <select name="segment" class="form-select">
+            <option value="">All segments</option>
+            @foreach (var seg in Model.Segments)
+            {
+                <option value="@seg" selected="@(Model.SegmentFilter == seg)">@seg</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100" type="submit">
+            <i class="bi bi-funnel me-1"></i>Filter
+        </button>
+    </div>
+    @if (!string.IsNullOrEmpty(Model.SearchQuery) || !string.IsNullOrEmpty(Model.SegmentFilter))
+    {
+        <div class="col-md-2">
+            <a href="/" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-x me-1"></i>Clear
+            </a>
+        </div>
+    }
+</form>
+
+@if (!Model.Customers.Any())
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-circle me-2"></i>No customers match your search.
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3">
+        @foreach (var c in Model.Customers)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm customer-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="avatar-circle me-3">
+                                @c.FullName[0]
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-semibold">@c.FullName</h6>
+                                <small class="text-muted">@c.Email</small>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap mb-3">
+                            @if (!string.IsNullOrEmpty(c.CustomerSegment))
+                            {
+                                <span class="badge bg-info text-dark">@c.CustomerSegment</span>
+                            }
+                            @if (!string.IsNullOrEmpty(c.LoyaltyTier) && c.LoyaltyTier != "none")
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-star-fill me-1"></i>@c.LoyaltyTier
+                                </span>
+                            }
+                        </div>
+                        <div class="text-muted small">
+                            <i class="bi bi-geo-alt me-1"></i>@c.City, @c.State
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex gap-2 bg-transparent">
+                        <a href="/dashboard/@c.CustomerId" class="btn btn-sm btn-dark flex-grow-1">
+                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                        </a>
+                        <a href="/orders/@c.CustomerId/new" class="btn btn-sm btn-success">
+                            <i class="bi bi-plus"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

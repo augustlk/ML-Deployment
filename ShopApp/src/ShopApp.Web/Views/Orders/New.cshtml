@@ -1,0 +1,212 @@
+@model NewOrderViewModel
+@{
+    ViewData["Title"] = $"New Order — {Model.Customer.FullName}";
+}
+
+@await Html.PartialAsync("_CustomerNav", Model.Customer)
+
+<h4 class="mb-4"><i class="bi bi-plus-circle me-2"></i>New Order for @Model.Customer.FullName</h4>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@err.ErrorMessage</div>
+        }
+    </div>
+}
+
+<form id="orderForm" method="post" action="/orders/@Model.Customer.CustomerId/new">
+    @Html.AntiForgeryToken()
+
+    <div class="row g-4">
+        <!-- Left: product selection -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-box-seam me-2"></i>Products</strong>
+                    <input type="text" id="productSearch" class="form-control form-control-sm w-auto"
+                           placeholder="Search products…" />
+                </div>
+                <div class="card-body p-0">
+                    <!-- Category filter tabs -->
+                    <div class="px-3 pt-3">
+                        <div class="d-flex flex-wrap gap-1 mb-3" id="categoryTabs">
+                            <button type="button" class="btn btn-sm btn-dark active" data-category="">All</button>
+                            @foreach (var cat in Model.Categories)
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-dark" data-category="@cat">@cat</button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="productTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th style="width:120px">Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var p in Model.Products)
+                                {
+                                    <tr class="product-row" data-category="@p.Category" data-name="@p.ProductName.ToLower()">
+                                        <td>
+                                            @p.ProductName
+                                            <small class="text-muted d-block">@p.Sku</small>
+                                        </td>
+                                        <td><span class="badge bg-light text-dark">@p.Category</span></td>
+                                        <td>$@p.Price.ToString("N2")</td>
+                                        <td>
+                                            <input type="hidden" name="ProductIds" value="@p.ProductId" />
+                                            <input type="number" name="Quantities"
+                                                   class="form-control form-control-sm qty-input"
+                                                   min="0" max="100" value="0"
+                                                   data-price="@p.Price"
+                                                   data-name="@p.ProductName" />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: order settings + summary -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header"><strong><i class="bi bi-sliders me-2"></i>Order Settings</strong></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Payment Method</label>
+                        <select name="PaymentMethod" class="form-select">
+                            @foreach (var pm in NewOrderViewModel.PaymentMethods)
+                            {
+                                <option value="@pm">@pm</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Shipping Method</label>
+                        <select name="ShippingMethod" class="form-select" id="shippingSelect">
+                            @foreach (var sm in NewOrderViewModel.ShippingMethods)
+                            {
+                                <option value="@sm">@sm</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Carrier</label>
+                        <select name="Carrier" class="form-select">
+                            @foreach (var c in NewOrderViewModel.Carriers)
+                            {
+                                <option value="@c">@c</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-semibold">Promo Code <span class="text-muted fw-normal">(optional)</span></label>
+                        <input type="text" name="PromoCode" class="form-control" placeholder="e.g. SAVE10" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order summary -->
+            <div class="card shadow-sm border-dark">
+                <div class="card-header bg-dark text-white"><strong>Order Summary</strong></div>
+                <div class="card-body" id="orderSummary">
+                    <div id="summaryItems" class="mb-2 small text-muted">No items selected yet.</div>
+                    <hr />
+                    <div class="d-flex justify-content-between">
+                        <span>Subtotal</span><span id="subtotal">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span>Shipping</span><span id="shippingFee">$5.99</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span>Tax (8%)</span><span id="taxAmount">$0.00</span>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Total</span><span id="orderTotal">$0.00</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success w-100" id="submitBtn" disabled>
+                        <i class="bi bi-bag-check me-2"></i>Place Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+const shippingFees = { standard: 5.99, expedited: 14.99, overnight: 24.99 };
+
+function recalculate() {
+    let subtotal = 0;
+    const lines = [];
+
+    document.querySelectorAll('.qty-input').forEach(input => {
+        const qty = parseInt(input.value) || 0;
+        if (qty > 0) {
+            const price = parseFloat(input.dataset.price);
+            subtotal += qty * price;
+            lines.push(`${input.dataset.name} × ${qty}`);
+        }
+    });
+
+    const method = document.getElementById('shippingSelect').value;
+    const fee = shippingFees[method] ?? 5.99;
+    const tax = subtotal * 0.08;
+    const total = subtotal + fee + tax;
+
+    document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+    document.getElementById('shippingFee').textContent = '$' + fee.toFixed(2);
+    document.getElementById('taxAmount').textContent = '$' + tax.toFixed(2);
+    document.getElementById('orderTotal').textContent = '$' + total.toFixed(2);
+    document.getElementById('summaryItems').innerHTML = lines.length
+        ? lines.map(l => `<div>${l}</div>`).join('')
+        : '<span class="text-muted">No items selected yet.</span>';
+    document.getElementById('submitBtn').disabled = lines.length === 0;
+}
+
+document.querySelectorAll('.qty-input').forEach(i => i.addEventListener('input', recalculate));
+document.getElementById('shippingSelect').addEventListener('change', recalculate);
+
+// Category filter
+document.querySelectorAll('#categoryTabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('#categoryTabs button').forEach(b => {
+            b.classList.remove('btn-dark', 'active');
+            b.classList.add('btn-outline-dark');
+        });
+        btn.classList.add('btn-dark', 'active');
+        btn.classList.remove('btn-outline-dark');
+
+        const cat = btn.dataset.category;
+        document.querySelectorAll('.product-row').forEach(row => {
+            row.style.display = (!cat || row.dataset.category === cat) ? '' : 'none';
+        });
+    });
+});
+
+// Product search
+document.getElementById('productSearch').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('.product-row').forEach(row => {
+        row.style.display = row.dataset.name.includes(q) ? '' : 'none';
+    });
+});
+
+recalculate();
+</script>
+}
