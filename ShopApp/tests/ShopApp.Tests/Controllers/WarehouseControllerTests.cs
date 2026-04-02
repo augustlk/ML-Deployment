@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using ShopApp.Web.Controllers;
@@ -44,6 +45,7 @@ public class WarehouseControllerTests
 
         var httpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext();
         _sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
+        _sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
 
         var result = await _sut.RunScoring();
 
