@@ -56,23 +56,24 @@ try
     builder.Services.AddScoped<IProductService, ProductService>();
 
     // ML INTEGRATION POINT ────────────────────────────────────────────────────
-    // The scoring service is registered as a singleton so its in-memory cache
-    // (LastRunAt + top-50 list) survives across HTTP requests.
+    // DatabaseScoringService reads fraud probabilities written by the ML
+    // pipeline (score_orders.py) from the ml_scores table in Supabase.
     //
-    // When the ML team delivers their model, swap this line:
-    //   builder.Services.AddSingleton<IScoringService, YourMlScoringService>();
-    //
-    // YourMlScoringService can take IServiceProvider / IServiceScopeFactory
-    // to open a scoped DB context as needed.
+    // Flow:
+    //   1. ML team trains model → saves fraud_detection_pipeline.pkl
+    //   2. Run: python ml/score_orders.py --model fraud_detection_pipeline.pkl --pg <DSN>
+    //   3. Scores appear in ml_scores table in Supabase
+    //   4. Click "Run Scoring" in the warehouse page (or POST /api/warehouse/score)
+    //      to refresh the in-memory cache from the database
     builder.Services.AddSingleton<IScoringService>(sp =>
     {
-        // Create a long-lived scope for the singleton's DB access
+        // Create a long-lived scope so the singleton can access the scoped DbContext
         var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
         var scope = scopeFactory.CreateScope();
-        return new RuleBasedScoringService(
+        return new DatabaseScoringService(
             scope.ServiceProvider.GetRequiredService<ShopDbContext>(),
             sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
-            sp.GetRequiredService<ILogger<RuleBasedScoringService>>());
+            sp.GetRequiredService<ILogger<DatabaseScoringService>>());
     });
 
     var app = builder.Build();

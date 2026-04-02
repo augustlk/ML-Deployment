@@ -1,13 +1,13 @@
 @model WarehouseViewModel
 @{
-    ViewData["Title"] = "Late Delivery Priority Queue";
+    ViewData["Title"] = "Fraud Risk Priority Queue";
 }
 
 <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
     <div>
-        <h2 class="mb-0"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Late Delivery Priority Queue</h2>
+        <h2 class="mb-0"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Fraud Risk Priority Queue</h2>
         <p class="text-muted mb-0 small">
-            Top 50 orders ranked by predicted late-delivery probability
+            Top 50 orders ranked by predicted fraud probability
             &nbsp;|&nbsp;
             Model: <strong>@Model.ScoringModelName</strong>
             @if (Model.LastScoredAt.HasValue)
@@ -66,7 +66,7 @@ else
                     <th>Method</th>
                     <th>Distance</th>
                     <th>Promised Days</th>
-                    <th>Late Probability</th>
+                    <th>Fraud Probability</th>
                 </tr>
             </thead>
             <tbody>
